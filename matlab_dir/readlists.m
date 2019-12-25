@@ -6,6 +6,6 @@ function [images,labels]=readlists()
 
   f=fopen('labels.list');
   l = textscan(f,'%s');
-  labels = l{:};
   fclose(f);
+  labels = l{:};
 end
