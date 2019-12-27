@@ -1,9 +1,8 @@
-function create_descriptor_files()
+function create_descriptor_files(images, labels)
     folder_name = 'equalized_dataset';
     if ~exist(folder_name, 'dir')
         error('Please call equalize_dataset() first.');
     else
-        [images, labels] = readlists();
         nimages = numel(images);
         desc_lbp = [];
         for n = 1 : nimages

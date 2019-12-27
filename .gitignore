@@ -1,5 +1,6 @@
 # PROJECT
 matlab_dir/equalized_dataset/
+matlab_dir/cropped_dataset/
 matlab_dir/descriptors.mat
 matlab_dir/input.mat
 

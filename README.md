@@ -10,8 +10,8 @@ Il file con le richieste del progetto è [*Assignment.pdf*](Assignment.pdf).
 - [x] Creare file con labels di groundtruth
 - [x] Aggiungere script per parsing del dataset e delle labels
 - [x] Ripulire differenze di illuminazione tra le immagini
-- [ ] Identificare texture scrivania
-- [ ] Estrarre dall'immagine la scatola di cioccolatini
+- [x] Identificare texture scrivania
+- [x] Estrarre dall'immagine la scatola di cioccolatini
 - [ ] Implementazione di un descrittore
 - [ ] Tests con i classificatori
 - [ ] Test di bontà confrontando con il groundtruth
