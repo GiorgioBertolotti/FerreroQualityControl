@@ -1,5 +1,7 @@
 # PROJECT
 matlab_dir/equalized_dataset/
+matlab_dir/descriptors.mat
+matlab_dir/input.mat
 
 # MATLAB
 # Windows default autosave extension
