@@ -51,8 +51,12 @@ function out=crop_image(image)
     out = image .* mask;
     %}
     
+    % SECOND VERSION
+    %{
+    image_original = image;
+    image = imresize(image, 0.25);
     dimens = size(image);
-    tsize = floor(dimens(1) / 25);
+    tsize = floor(dimens(1) / 35);
     tstep = floor(tsize / 2);
     num_clusters = 2;
     out = compute_local_descriptors(image, tsize, tstep, @compute_lbp);
@@ -90,6 +94,57 @@ function out=crop_image(image)
     [~, indexes] = sort(occurrences, 'descend');
     index = lab(indexes(2));
     new_mask = mask_labels_original == index;
+    
+    dimens_original = size(image_original);
+    mask_original = imresize(new_mask, [dimens_original(1), dimens_original(2)]);
+    
+    out = im2double(image_original) .* mask_original;
+    %}
+    
+    image_original = image;
+    image = imresize(image, 0.25);
+    dimens = size(image);
+    tsize = floor(dimens(1) / 35);
+    tstep = floor(tsize / 2);
+    num_clusters = 2;
+    out = compute_local_descriptors(image, tsize, tstep, @compute_lbp);
+    labels = kmeans(out.descriptors, num_clusters);
+    img_labels = reshape(labels, out.nt_rows, out.nt_cols);
+    img_labels = imresize(img_labels, [dimens(1), dimens(2)], 'nearest');
 
-    out = im2double(image) .* new_mask;
+    img_labels_original = img_labels;
+    lab = unique(img_labels);
+    img_labels = sort(img_labels);
+    count_occurrence = zeros(size(lab));
+    for i = 1:length(lab)
+        count_occurrence(i) = sum(sum(img_labels == lab(i)));
+    end
+    [~, indexes] = sort(count_occurrence, 'descend');
+    max_pos = lab(indexes(1));
+
+    mask = img_labels_original ~= max_pos;
+    edges = edge(rgb2gray(image));
+    se = strel('diamond', tstep);
+    edges = imdilate(edges, se);
+    mixed_mask = mask + edges;
+    mixed_mask = imfill(mixed_mask, 'holes');
+    new_mask = zeros(dimens(1), dimens(2));
+    new_mask(1:dimens(1)-tstep+1,1:dimens(2)-tstep+1) = mixed_mask(tstep:dimens(1),tstep:dimens(2));
+
+    mask_labels_original = bwlabel(new_mask);
+    mask_labels = mask_labels_original;
+    lab = unique(mask_labels);
+    mask_labels = sort(mask_labels);
+    occurrences = zeros(size(lab));
+    for i = 1:length(lab)
+        occurrences(i) = sum(sum(mask_labels == lab(i)));
+    end
+    [~, indexes] = sort(occurrences, 'descend');
+    index = lab(indexes(2));
+    new_mask = mask_labels_original == index;
+
+    dimens_original = size(image_original);
+    mask_original = imresize(new_mask, [dimens_original(1), dimens_original(2)]);
+
+    out = im2double(image_original) .* mask_original;
 end
