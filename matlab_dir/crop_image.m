@@ -101,6 +101,8 @@ function out=crop_image(image)
     out = im2double(image_original) .* mask_original;
     %}
     
+    % THIRD VERSION
+    %{
     image_original = image;
     image = imresize(image, 0.25);
     dimens = size(image);
@@ -147,4 +149,58 @@ function out=crop_image(image)
     mask_original = imresize(new_mask, [dimens_original(1), dimens_original(2)]);
 
     out = im2double(image_original) .* mask_original;
+    %}
+    
+    im = im2double(image);
+    %R = im(:,:,1);
+    %G = im(:,:,2);
+    B = im(:,:,3);
+    T = 30/255;
+    mask = B < T;
+    se = strel("diamond", 25);
+    mask_filled = imfill(mask, "holes");
+    mask_closed = imclose(mask_filled, se);
+
+    mask_labels_original = bwlabel(mask_closed);
+    mask_labels = mask_labels_original;
+    lab = unique(mask_labels);
+    mask_labels = sort(mask_labels);
+    occurrences = zeros(size(lab));
+    for i = 1:length(lab)
+        occurrences(i) = sum(sum(mask_labels == lab(i)));
+    end
+    [~, indexes] = sort(occurrences, 'descend');
+    index = lab(indexes(2));
+    new_mask = mask_labels_original == index;
+
+    dimens = size(new_mask);
+    min_i = [dimens(1), dimens(2)];
+    min_j = [dimens(1), dimens(2)];
+    max_i = [1, 1];
+    max_j = [1, 1];
+    for i=1:dimens(1)
+        for j=1:dimens(2)
+            if new_mask(i,j) == 1
+                if i < min_i(1)
+                    min_i = [i, j];
+                end
+                if j < min_j(2)
+                    min_j = [i, j];
+                end
+                if i > max_i(1)
+                    max_i = [i, j];
+                end
+                if j > max_j(2)
+                    max_j = [i, j];
+                end
+            end
+        end
+    end
+
+    pos_shape = [flip(min_i), flip(max_j), flip(max_i), flip(min_j)];
+    rgb_mask = zeros(dimens(1), dimens(2), 3);
+    rgb_mask = insertShape(rgb_mask, 'FilledPolygon', pos_shape, 'Color', 'white', 'Opacity', 1.0);
+    bw = rgb2gray(rgb_mask);
+    final_mask = logical(bw);
+    out = im .* final_mask;
 end
