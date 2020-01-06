@@ -541,19 +541,43 @@ function out=crop_image(image)
     x = boundaries{1}(:, 2);
     y = boundaries{1}(:, 1);
     % get lines on top side
-    sideElements = y < rows/2 & x > (columns * 0.4) & x < (columns * 0.6);
-    topSideX = x(sideElements);
-    topSideY = y(sideElements);
+    top_pt = [];
+    for i=1:rows
+        for j=1:columns
+            if cropped_mask(i, j) == 1
+                top_pt = j;
+                break;
+            end
+        end
+        if not(isempty(top_pt))
+            break;
+        end
+    end
+    side_elements = y < rows/2 & x < top_pt;
+    top_side_x = x(side_elements);
+    top_side_y = y(side_elements);
     % get lines on bottom side
-    sideElements = y > rows/2 & x > (columns * 0.4) & x < (columns * 0.6);
-    bottomSideX = x(sideElements);
-    bottomSideY = y(sideElements);
+    bottom_pt = [];
+    for i=rows:-1:1
+        for j=columns:-1:1
+            if cropped_mask(i, j) == 1
+                bottom_pt = j;
+                break;
+            end
+        end
+        if not(isempty(bottom_pt))
+            break;
+        end
+    end
+    side_elements = y > rows/2 & x > bottom_pt;
+    bottom_side_x = x(side_elements);
+    bottom_side_y = y(side_elements);
     % fit line to get the angle
-    topCoeffs = polyfit(topSideX, topSideY, 1);
-    bottomCoeffs = polyfit(bottomSideX, bottomSideY, 1);
+    top_coeffs = polyfit(top_side_x, top_side_y, 1);
+    bottom_coeffs = polyfit(bottom_side_x, bottom_side_y, 1);
     % get the top angle
-    meanSlope = mean([topCoeffs(1), bottomCoeffs(1)]);
-    angle = atand(meanSlope);
+    mean_slope = mean([top_coeffs(1), bottom_coeffs(1)]);
+    angle = atand(mean_slope);
     % rotate the mask and the image to get the top side aligned
     r_mask = imrotate(cropped_mask, angle);
     r_im = imrotate(cropped, angle);
@@ -564,5 +588,10 @@ function out=crop_image(image)
     ymax = max(ii);
     xmin = min(jj);
     xmax = max(jj);
-    out.image = imcrop(r_im, [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1]);
+    cropped = imcrop(r_im, [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1]);
+    [rows, columns, ~] = size(cropped);
+    if rows > columns
+        cropped = imrotate(cropped, 90);
+    end
+    out.image = cropped;
 end
