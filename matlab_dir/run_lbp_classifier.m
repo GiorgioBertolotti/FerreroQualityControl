@@ -1,5 +1,5 @@
 [images, labels] = readlists();
-equalize_dataset(images);
+crop_dataset(images);
 create_descriptor_files(images, labels);
 load('descriptors.mat');
 load('input.mat');

@@ -1,7 +1,7 @@
 function create_descriptor_files(images, labels)
-    folder_name = 'equalized_dataset';
+    folder_name = 'cropped_dataset';
     if ~exist(folder_name, 'dir')
-        error('Please call equalize_dataset() first.');
+        error('Please call crop_dataset() first.');
     else
         nimages = numel(images);
         desc_lbp = [];

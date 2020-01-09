@@ -579,8 +579,8 @@ function out=crop_image(image)
     mean_slope = mean([top_coeffs(1), bottom_coeffs(1)]);
     angle = atand(mean_slope);
     % rotate the mask and the image to get the top side aligned
-    r_mask = imrotate(cropped_mask, angle);
-    r_im = imrotate(cropped, angle);
+    r_mask = imrotate(mask, angle);
+    r_im = imrotate(image, angle);
     % crop out all the rest of the image
     okind = find(r_mask > 0);
     [ii,jj] = ind2sub(size(r_mask), okind);
