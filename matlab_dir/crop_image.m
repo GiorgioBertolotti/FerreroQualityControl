@@ -526,8 +526,8 @@ function out=crop_image(image)
     ymax = max(ii);
     xmin = min(jj);
     xmax = max(jj);
-    cropped = imcrop(image, [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1]);
-    cropped_mask = imcrop(mask, [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1]);
+    cropped = imcrop(im, [xmin + 1, ymin + 1, xmax - xmin - 1, ymax - ymin - 1]);
+    cropped_mask = imcrop(mask, [xmin + 1, ymin + 1, xmax - xmin - 1, ymax - ymin - 1]);
     % if necessary rotate the image to get the long side of the box
     % horizontally aligned
     [rows, columns, ~] = size(cropped);
@@ -572,6 +572,14 @@ function out=crop_image(image)
     side_elements = y > rows/2 & x > bottom_pt;
     bottom_side_x = x(side_elements);
     bottom_side_y = y(side_elements);
+    %{
+    % show the sides
+    imshow(cropped_mask, []);
+    axis on;
+    hold on;
+    plot(top_side_x, top_side_y, 'r-', 'LineWidth', 3);
+    plot(bottom_side_x, bottom_side_y, 'r-', 'LineWidth', 3);
+    %}
     % fit line to get the angle
     top_coeffs = polyfit(top_side_x, top_side_y, 1);
     bottom_coeffs = polyfit(bottom_side_x, bottom_side_y, 1);
@@ -580,7 +588,7 @@ function out=crop_image(image)
     angle = atand(mean_slope);
     % rotate the mask and the image to get the top side aligned
     r_mask = imrotate(mask, angle);
-    r_im = imrotate(image, angle);
+    r_im = imrotate(im, angle);
     % crop out all the rest of the image
     okind = find(r_mask > 0);
     [ii,jj] = ind2sub(size(r_mask), okind);
@@ -588,10 +596,20 @@ function out=crop_image(image)
     ymax = max(ii);
     xmin = min(jj);
     xmax = max(jj);
-    cropped = imcrop(r_im, [xmin, ymin, xmax - xmin + 1, ymax - ymin + 1]);
+    % rotate the image in landscape
+    cropped = imcrop(r_im, [xmin, ymin, xmax - xmin, ymax - ymin]);
     [rows, columns, ~] = size(cropped);
     if rows > columns
         cropped = imrotate(cropped, 90);
+    end
+    % flip up/down the image if the white ferreros are on the bottom
+    [rows, ~, ~] = size(cropped);
+    bw = rgb2gray(cropped);
+    mask = bw > 0.5;
+    bottom_half_count = sum(sum(mask(floor(rows/2):rows, :)));
+    top_half_count = sum(sum(mask(1:floor(rows/2), :)));
+    if bottom_half_count > top_half_count
+        cropped = flipud(cropped);
     end
     out.image = cropped;
 end
