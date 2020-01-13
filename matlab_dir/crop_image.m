@@ -521,12 +521,28 @@ function out=crop_image(image)
     mask = bwareafilt(mask, 1);
     corners = find_corners(mask);
     if length(corners) == 4
-        % if I can find all the 4 corners of the box, project the box to
-        % fill the image rectangle
-        %view_corners(im, corners);
+        view_corners(im, corners);
+        % if the mask has more width then height, then rotate it and flip
+        % it to fix the problem
+        %{
+        if out_corners.TRBL == true
+            if corners(1,1) - corners(3,1) < corners(2,2) - corners(4,2)
+                im = flipud(imrotate(im, 90));
+                mask = flipud(imrotate(mask, 90));
+                corners = fliplr(corners);
+            end
+        else
+            if corners(2,1) - corners(4,1) < corners(1,2) - corners(3,2)
+                im = flipud(imrotate(im, 90));
+                mask = flipud(imrotate(mask, 90));
+                corners = fliplr(corners);
+            end
+        end
+        %}
+        % project the box to fill the image rectangle
         d_mask = size(mask);
         corners = [corners(:,1)./d_mask(1), corners(:,2)./d_mask(2)];
-        p_corners = [1, 0; 0, 1; 1, 1; 0, 0];
+        p_corners = [0,0; 1,0; 1,1; 0,1];
         tform = maketform('projective', fliplr(corners), p_corners);
         udata = [0 1];  vdata = [0 1];
         [new_cropped, ~, ~] = imtransform(im, tform, 'bicubic', 'udata', udata, 'vdata', vdata, 'size', size(im), 'fill', 0);
