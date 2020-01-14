@@ -2,7 +2,7 @@ function out=find_sides(equalized_image)
     % use a threshold on CR channel to get a mask of the box
     ycbcr = rgb2ycbcr(equalized_image);
     CR = ycbcr(:,:,3);
-    T = 100/255;
+    T = 110/255;
     mask1 = CR < T;
     mask1 = medfilt2(mask1);
     BW = edge(mask1,'canny');
@@ -10,13 +10,14 @@ function out=find_sides(equalized_image)
     P = houghpeaks(H,5,'threshold',ceil(0.3*max(H(:))));
     lines = houghlines(BW,theta,rho,P,'FillGap',5,'MinLength',7);
     new_lines = [];
+    figure, imshow(equalized_image), hold on;
     for i = 1:length(lines)
-       %{
+       
        xy = [lines(i).point1; lines(i).point2];
        plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
        plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
        plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
-       %}
+       
        % Determine the endpoints of the longest line segment
        len = norm(lines(i).point1 - lines(i).point2);
        if len > 50
@@ -28,7 +29,7 @@ function out=find_sides(equalized_image)
     for i = 1:length(lines)
         found = 0;
         for j = 1:length(new_lines)
-            if new_lines(j).theta == lines(i).theta
+            if and(new_lines(j).theta == lines(i).theta, abs(new_lines(j).rho - lines(i).rho) < 100)
                 new_lines(j).point2 = lines(i).point2;
                 found = 1;
                 break;
