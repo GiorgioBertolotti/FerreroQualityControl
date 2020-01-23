@@ -3,7 +3,7 @@ function out=crop_with_sides(im, sides)
     %view_sides(im, sides);
     corners = [];
     im_size = size(im);
-    tollerance = floor([im_size(1)/10, im_size(2)/10]);
+    tollerance = max(floor([im_size(1)/10, im_size(2)/10]));
     for i = 1:3
         for j = 1:4
             if i ~= j
@@ -26,7 +26,7 @@ function out=crop_with_sides(im, sides)
                 plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
                 %}
                 corner = floor([x1*y2-x2*y1,x3*y4-x4*y3]/[y2-y1,y4-y3;-(x2-x1),-(x4-x3)]);
-                if and(and(corner(1) > -tollerance(1), corner(2) > -tollerance(2)), and(corner(1) < im_size(1)+tollerance(1), corner(2) < im_size(2)+tollerance(2)))
+                if and(and(corner(1) > -tollerance, corner(2) > -tollerance), and(corner(1) < im_size(1)+tollerance, corner(2) < im_size(2)+tollerance))
                     there_is = false;
                     for n = 1:size(corners, 1)
                         if and(corners(n, 1) == corner(1), corners(n, 2) == corner(2))
