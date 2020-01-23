@@ -26,8 +26,8 @@ function out=crop_with_mask(im)
     mask = bwareafilt(mask, 1);
     corners = find_corners(mask);
     if valid_corners(corners)
-        %view_corners(im, corners);
         % project the box to fill the image rectangle
+        %view_corners(im, corners);
         cropped = stretch_box(im, mask, corners);
     else
         % crop out the rest of the image
@@ -58,7 +58,7 @@ function out=crop_with_mask(im)
                 break;
             end
         end
-        side_elements = y < rows/2 & x < top_pt;
+        side_elements = y < rows/20 & x < top_pt;
         top_side_x = x(side_elements);
         top_side_y = y(side_elements);
         % get lines on bottom side
@@ -74,7 +74,7 @@ function out=crop_with_mask(im)
                 break;
             end
         end
-        side_elements = y > rows/2 & x > bottom_pt;
+        side_elements = y > rows/20*19 & x > bottom_pt;
         bottom_side_x = x(side_elements);
         bottom_side_y = y(side_elements);
         %{

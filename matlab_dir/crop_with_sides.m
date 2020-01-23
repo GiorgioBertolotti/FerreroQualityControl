@@ -45,8 +45,6 @@ function out=crop_with_sides(im, sides)
         bottom_corner = corners(1,:);
         left_corner = corners(1,:);
         right_corner = corners(1,:);
-        % TOFIX: When there are points with the same coordinates this for
-        % loop to find the corners doesn't work
         for i = 2:4
             if corners(i,1) < upper_corner(1)
                 upper_corner = corners(i,:);
@@ -61,8 +59,48 @@ function out=crop_with_sides(im, sides)
                 right_corner = corners(i,:);
             end
         end
+        % when there are points with the same coordinates we have to find
+        % if there's one that has not been picked up for the projection
+        pt_to_fix = [];
+        for i = 1:4
+            if and(and(sum(corners(i,:)~=upper_corner) > 0,sum(corners(i,:)~=bottom_corner) > 0),and(sum(corners(i,:)~=left_corner) > 0,sum(corners(i,:)~=right_corner) > 0))
+                pt_to_fix = corners(i,:);
+            end
+        end
+        if ~isempty(pt_to_fix)
+            if upper_corner == right_corner
+                if pt_to_fix(1) < upper_corner(1)
+                    upper_corner = pt_to_fix;
+                else
+                    right_corner = pt_to_fix;
+                end
+            end
+            if upper_corner == left_corner
+                if pt_to_fix(1) < upper_corner(1)
+                    upper_corner = pt_to_fix;
+                else
+                    left_corner = pt_to_fix;
+                end
+            end
+            if bottom_corner == right_corner
+                if pt_to_fix(1) < bottom_corner(1)
+                    right_corner = pt_to_fix;
+                else
+                    bottom_corner = pt_to_fix;
+                end
+            end
+            if bottom_corner == left_corner
+                if pt_to_fix(1) < bottom_corner(1)
+                    left_corner = pt_to_fix;
+                else
+                    bottom_corner = pt_to_fix;
+                end
+            end
+        end
         top_left_dist = pitagora_dist(upper_corner(1)-left_corner(1),upper_corner(2)-left_corner(2));
         top_right_dist = pitagora_dist(upper_corner(1)-right_corner(1),upper_corner(2)-right_corner(2));
+        bottom_left_dist = pitagora_dist(bottom_corner(1)-left_corner(1),bottom_corner(2)-left_corner(2));
+        bottom_right_dist = pitagora_dist(bottom_corner(1)-right_corner(1),bottom_corner(2)-right_corner(2));
         if top_left_dist > top_right_dist
             corners = [left_corner; upper_corner; right_corner; bottom_corner];
         else
@@ -76,8 +114,12 @@ function out=crop_with_sides(im, sides)
         bw = rgb2gray(rgb_mask);
         mask = logical(bw);
         % project the box to fill the image rectangle
-        view_corners(im, corners);
-        cropped = stretch_box(im, mask, corners);
+        %view_corners(im, corners);
+        if top_left_dist > top_right_dist
+            cropped = stretch_box(im, mask, corners, [min(top_right_dist, bottom_left_dist),min(top_left_dist, bottom_right_dist)]);
+        else
+            cropped = stretch_box(im, mask, corners, [min(top_left_dist, bottom_right_dist),min(top_right_dist, bottom_left_dist)]);
+        end
     else
         cropped = crop_with_mask(im);
     end
