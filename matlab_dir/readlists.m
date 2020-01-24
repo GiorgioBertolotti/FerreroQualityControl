@@ -4,7 +4,7 @@ function [images,labels]=readlists()
   fclose(f);
   images = z{:}; 
 
-  f=fopen('labels.list');
+  f=fopen('labels2.list');
   l = textscan(f,'%s');
   fclose(f);
   labels = l{:};
