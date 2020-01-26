@@ -4,7 +4,12 @@ function out=crop_image(image)
     if size(sides, 1) == 4
         cropped = crop_with_sides(im, sides);
     else
-        cropped = crop_with_mask(im);
+        sides = find_sides_alt(im);
+        if size(sides, 1) == 4
+            cropped = crop_with_sides_alt(im, sides);
+        else
+            cropped = crop_with_mask(im);
+        end
     end
     % rotate the image in landscape
     [rows, columns, ~] = size(cropped);
