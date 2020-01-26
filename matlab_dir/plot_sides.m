@@ -1,4 +1,4 @@
-function view_sides(image, sides)
+function plot_sides(image, sides)
     figure, imshow(image), hold on;
     for i = 1:length(sides)
        xy = [sides(i).point1; sides(i).point2];

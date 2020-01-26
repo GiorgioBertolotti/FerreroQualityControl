@@ -4,13 +4,13 @@ function create_descriptor_files(images, labels)
         error('Please call crop_dataset() first.');
     else
         nimages = numel(images);
-        desc_lbp = [];
+        desc_cd = [];
         for n = 1 : nimages
             im = imread([folder_name '/' images{n}]);
-            lb = compute_lbp(im);
-            desc_lbp = [desc_lbp; lb];
+            cd = compute_grid_descriptor(im);
+            desc_cd = [desc_cd; cd];
         end
-        save('descriptors.mat','desc_lbp');
+        save('descriptors.mat','desc_cd');
         save('input.mat', 'images', 'labels');
     end
 end

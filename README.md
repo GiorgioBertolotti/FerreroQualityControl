@@ -13,7 +13,7 @@ Il file con le richieste del progetto è [*Assignment.pdf*](Assignment.pdf).
 - [x] Identificare texture scrivania
 - [x] Estrarre dall'immagine la scatola di cioccolatini
 - [x] Raddrizzare area tagliata contenente la scatola di cioccolatini
-- [ ] Implementazione di un descrittore per il riconoscimento delle scatole valide
+- [x] Implementazione di un descrittore per il riconoscimento delle scatole valide
 - [ ] Tests con i classificatori
 - [ ] Test di bontà confrontando con il groundtruth
 
