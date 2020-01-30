@@ -1,9 +1,9 @@
 function plot_sides(image, sides)
     figure, imshow(image), hold on;
+    X=[1:size(image,2)];
     for i = 1:length(sides)
-       xy = [sides(i).point1; sides(i).point2];
-       plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
-       plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
-       plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
+        side = sides(i);
+        Y=(side.rho-X*cos(side.angle))/sin(side.angle);
+        plot(X,Y,'r-', 'LineWidth', 1);
     end
 end

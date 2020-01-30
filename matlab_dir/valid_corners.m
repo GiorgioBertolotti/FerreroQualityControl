@@ -9,7 +9,11 @@ function out=valid_corners(corners)
         if or(min(len_a,len_c)<0.5*max(len_a,len_c),min(len_b,len_d)<0.5*max(len_b,len_d))
             out = false;
         else
-            out = true;
+            if or(min(len_a,len_c) < 0.3 * min(len_b,len_d), min(len_b,len_d) < 0.3 * min(len_a,len_c))
+                out = false;
+            else
+                out = true;
+            end
         end
     end
 end

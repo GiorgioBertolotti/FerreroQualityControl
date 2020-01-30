@@ -1,12 +1,14 @@
 function out=crop_image(image)
     im = equalize_image(im2double(image));
     sides = find_sides(im);
-    if size(sides, 1) == 4
-        cropped = crop_with_sides(im, sides);
+    result = find_valid_corners(im, sides);
+    if result.valid == true
+        cropped = crop_with_corners(im, result.corners);
     else
         sides = find_sides_alt(im);
-        if size(sides, 1) == 4
-            cropped = crop_with_sides_alt(im, sides);
+        result = find_valid_corners(im, sides);
+        if result.valid == true
+            cropped = crop_with_corners(im, result.corners);
         else
             cropped = crop_with_mask(im);
         end

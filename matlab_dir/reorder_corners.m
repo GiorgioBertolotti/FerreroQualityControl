@@ -59,4 +59,11 @@ function out=reorder_corners(corners)
     out.bottom_corner = bottom_corner;
     out.left_corner = left_corner;
     out.right_corner = right_corner;
+    top_left_dist = pitagora_dist(upper_corner(1)-left_corner(1),upper_corner(2)-left_corner(2));
+    top_right_dist = pitagora_dist(upper_corner(1)-right_corner(1),upper_corner(2)-right_corner(2));
+    if top_left_dist > top_right_dist
+        out.corners = [left_corner; upper_corner; right_corner; bottom_corner];
+    else
+        out.corners = [upper_corner; right_corner; bottom_corner; left_corner];
+    end
 end

@@ -14,7 +14,7 @@ function out=separate_lists(images, labels)
             centroid_pos = compute_white_centroid(image)./[r, c];
             proportions = c/r;
             % differenciate descriptors based on box type
-            if or(proportions > 1.2, centroid_pos(1) <= 0.4)
+            if or(proportions > 1.2, centroid_pos(1) <= 0.35)
                 grids = [grids; images(n)];
                 grid_labels = [grid_labels; labels(n)];
             else
