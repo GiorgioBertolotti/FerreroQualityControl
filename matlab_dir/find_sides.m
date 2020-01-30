@@ -188,7 +188,7 @@ function out=extract_4_lines(lines)
     for i = 1:length(lines)
         there_is = false;
         for j = 1:length(new_lines)
-            if and(new_lines(j).point1 == lines(i).point1, new_lines(j).point2 == lines(i).point2)
+            if and(new_lines(j).rho == lines(i).rho, new_lines(j).theta == lines(i).theta)
                 there_is = true;
                 break;
             end
