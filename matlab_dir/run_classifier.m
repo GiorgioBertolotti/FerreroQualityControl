@@ -2,6 +2,7 @@
 crop_dataset(images);
 separation = separate_lists(images, labels);
 check_valid_images(separation.grids, 'grid');
+check_valid_images(separation.beehives, 'beehive');
 %{
 create_descriptor_files(separation.grids, separation.grid_labels, 'grid');
 load('descriptors.mat');
