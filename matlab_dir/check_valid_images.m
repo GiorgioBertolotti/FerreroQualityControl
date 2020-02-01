@@ -24,7 +24,6 @@ function check_valid_images(images, type)
         if ~exist(nv2_folder_name, 'dir')
             mkdir(nv2_folder_name);
         end
-		
         for n = 1 : nimages
             image = imread([folder_name '/' images{n}]);
             if strcmp(type,'grid')

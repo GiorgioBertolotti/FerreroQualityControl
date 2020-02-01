@@ -3,6 +3,8 @@ matlab_dir/equalized_dataset/
 matlab_dir/cropped_dataset/
 matlab_dir/not_valid_images/
 matlab_dir/valid_images/
+matlab_dir/not_valid_images2/
+matlab_dir/valid_images2/
 matlab_dir/descriptors.mat
 matlab_dir/input.mat
 

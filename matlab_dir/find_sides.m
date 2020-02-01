@@ -61,13 +61,13 @@ function out=find_sides(equalized_image)
                 num_cycles_bigger_than_4 = num_cycles_bigger_than_4 + 1;
                 num_cycles_smaller_than_4 = 0;
                 if num_cycles_bigger_than_4 > 5
-                    extract_4_lines(lines);
+                    lines = extract_4_lines(lines);
                 end
             elseif size(new_lines,1) < 4
                 num_cycles_bigger_than_4 = 0;
                 num_cycles_smaller_than_4 = num_cycles_smaller_than_4 + 1;
-                if num_cycles_bigger_than_4 > 20
-                    extract_4_lines(lines);
+                if num_cycles_smaller_than_4 > 20
+                    lines = extract_4_lines(lines);
                 end
             else
                 lines = new_lines;

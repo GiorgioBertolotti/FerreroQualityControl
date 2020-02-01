@@ -1,4 +1,4 @@
-function plot_point(image, point)
+function out=plot_point(image, point)
     image_copy = image;
     for n=max(1,point(1)-10):max(1,point(1)+10)
         for m=max(1,point(2)-10):max(1,point(2)+10)
@@ -11,5 +11,5 @@ function plot_point(image, point)
             end
         end
     end
-    imshow(image_copy);
+    out = image_copy;
 end

@@ -11,6 +11,12 @@ function out=crop_image(image)
             cropped = crop_with_corners(im, result.corners);
         else
             cropped = crop_with_mask(im);
+            im = equalize_image(im2double(cropped));
+            sides = find_sides(im);
+            result = find_valid_corners(im, sides);
+            if result.valid == true
+                cropped = crop_with_corners(cropped, result.corners);
+            end
         end
     end
     % rotate the image in landscape

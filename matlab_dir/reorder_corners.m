@@ -7,13 +7,13 @@ function out=reorder_corners(corners)
         if corners(i,1) < upper_corner(1)
             upper_corner = corners(i,:);
         end
-        if corners(i,1) > bottom_corner(1)
+        if corners(i,1) >= bottom_corner(1)
             bottom_corner = corners(i,:);
         end
         if corners(i,2) < left_corner(2)
             left_corner = corners(i,:);
         end
-        if corners(i,2) > right_corner(2)
+        if corners(i,2) >= right_corner(2)
             right_corner = corners(i,:);
         end
     end
