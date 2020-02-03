@@ -45,7 +45,8 @@ function out=find_sides(equalized_image)
         % the conditions, the similarity is defined by the delta of the 
         % angle of two lines, it increases at every try
         max_delta = 10;
-        new_lines = similar_theta_filtering(lines, max_delta);
+        min_sides_dist = floor(length(equalized_image) / 20);
+        new_lines = similar_theta_filtering(lines, max_delta, min_sides_dist);
         if size(new_lines,1) >= 4
             lines = new_lines;
         end
@@ -53,7 +54,7 @@ function out=find_sides(equalized_image)
         num_cycles_bigger_than_4 = 0;
         while size(lines,1) > 4
             max_delta = max_delta + 1;
-            new_lines = similar_theta_filtering(lines, max_delta);
+            new_lines = similar_theta_filtering(lines, max_delta, min_sides_dist);
             if size(new_lines,1) > 4
                 if size(new_lines,1) < size(lines,1)
                     lines = new_lines;
@@ -77,7 +78,7 @@ function out=find_sides(equalized_image)
     out = lines;
 end
 
-function out=similar_theta_filtering(lines, max_delta_theta)
+function out=similar_theta_filtering(lines, max_delta_theta, min_sides_dist)
     similar_thetas = {};
     % group the lines based on similar angles
     for i = 1:length(lines)
@@ -119,28 +120,30 @@ function out=similar_theta_filtering(lines, max_delta_theta)
                     max_rho = line;
                 end
             end
+            line1 = min_rho;
+            line2 = max_rho;
             % but if there's another line close to the max or to the min with a
             % more similar angle to the opposite line then pick that
             for j = 1:length(similar_thetas{i})
                 line = similar_thetas{i}(j);
-                if and(or(line.rho ~= min_rho.rho, line.theta ~= min_rho.theta),...
-                        or(line.rho ~= max_rho.rho, line.theta ~= max_rho.theta))
-                    delta_theta_max_min = abs(min_rho.theta - max_rho.theta);
-                    if abs(line.rho - min_rho.rho) < 100
-                        delta_theta_new_line = abs(line.theta - max_rho.theta);
+                if and(or(line.rho ~= line1.rho, line.theta ~= line1.theta),...
+                        or(line.rho ~= line2.rho, line.theta ~= line2.theta))
+                    delta_theta_max_min = abs(line1.theta - line2.theta);
+                    if abs(line.rho - line1.rho) < min_sides_dist
+                        delta_theta_new_line = abs(line.theta - line2.theta);
                         if delta_theta_new_line < delta_theta_max_min
-                            min_rho = line;
+                            line1 = line;
                         end
                     end
-                    if abs(line.rho - max_rho.rho) < 100
-                        delta_theta_new_line = abs(line.theta - min_rho.theta);
+                    if abs(line.rho - line2.rho) < min_sides_dist
+                        delta_theta_new_line = abs(line.theta - line1.theta);
                         if delta_theta_new_line < delta_theta_max_min
-                            max_rho = line;
+                            line2 = line;
                         end
                     end
                 end
             end
-            similar_thetas{i} = [min_rho, max_rho];
+            similar_thetas{i} = [line1, line2];
         end
     end
     % remove lines that have no other lines with similar theta if there

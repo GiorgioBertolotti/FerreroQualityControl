@@ -64,7 +64,7 @@ function out=check_valid_grid_image(image)
             if score < 0.9
                 valid = 0;
                 section_center = [floor(mean([cell_r * (i-1), cell_r * i])),floor(mean([cell_c * (j-1), cell_c * j]))];
-                circle_props = [section_center(1), section_center(2), floor(min(cell_r,cell_c)/2)];
+                circle_props = [section_center(2), section_center(1), floor(min(cell_r,cell_c)/2)];
                 image_copy = insertShape(image_copy,'circle',circle_props,'LineWidth',5,'Color','red');
             end
         end
