@@ -29,7 +29,7 @@ function check_valid_images(images, type)
             if strcmp(type,'grid')
                 result = check_valid_grid_image(image);
                 if result.valid == 0
-                    imwrite(image, [nv_folder_name '/' images{n}]);
+                    imwrite(result.image, [nv_folder_name '/' images{n}]);
                 else
                     imwrite(image, [v_folder_name '/' images{n}]);
                 end
@@ -53,15 +53,31 @@ function out=check_valid_grid_image(image)
     sections = mat2cell(resized, cell_r * ones(4,1), cell_c * ones(6,1), [3]);
     image_copy = image;
     valid = 1;
+    median_whites = [];
+    median_blacks = [];
+    for i=1:4
+        computed_whites = [];
+        computed_blacks = [];
+        for j=1:6
+            section = cell2mat(sections(i,j));
+            computed_whites = [computed_whites, compute_whites(section)];
+            computed_blacks = [computed_blacks, compute_blacks(section)];
+        end
+        median_whites = [median_whites, median(computed_whites)];
+        median_blacks = [median_blacks, median(computed_blacks)];
+    end
     for i=1:4
         for j=1:6
             section = cell2mat(sections(i,j));
             computed_white = compute_whites(section);
-            avg_whites_without_this = compute_line_whites(sections, i, j);
             computed_black = compute_blacks(section);
-            avg_blacks_without_this = compute_line_blacks(sections, i, j);
-            score = 1 - abs(avg_whites_without_this - computed_white) - abs(avg_blacks_without_this - computed_black);
-            if score < 0.9
+            % we calculate a score based on how different is the quantity
+            % of whites and the quantity of blacks in the section compared
+            % to the median of the line of the section
+            % NB: this could create problems when there's a line which is
+            % very full of errors...
+            score = 1 - abs(median_whites(i) - computed_white) - abs(median_blacks(i) - computed_black);
+            if score < 0.7
                 valid = 0;
                 section_center = [floor(mean([cell_r * (i-1), cell_r * i])),floor(mean([cell_c * (j-1), cell_c * j]))];
                 circle_props = [section_center(2), section_center(1), floor(min(cell_r,cell_c)/2)];
@@ -133,11 +149,11 @@ function out=compute_whites(rgbimage)
     if size(rgbimage,3) ~= 3
         RGB_mask = rgbimage > 220;
         count_whites = sum(sum(RGB_mask==1));
-        out = count_whites/numel(rgbimage);
+        out = count_whites/numel(RGB_mask);
     else
         RGB_mask = rgb2gray(rgbimage) > 220;
         count_whites = sum(sum(RGB_mask==1));
-        out = count_whites/numel(rgbimage);
+        out = count_whites/numel(RGB_mask);
     end
 end
 
@@ -145,10 +161,10 @@ function out=compute_blacks(rgbimage)
     if size(rgbimage,3) ~= 3
         RGB_mask = rgbimage < 30;
         count_blacks = sum(sum(RGB_mask==1));
-        out = count_blacks/numel(rgbimage);
+        out = count_blacks/numel(RGB_mask);
     else
         RGB_mask = rgb2gray(rgbimage) < 30;
         count_blacks = sum(sum(RGB_mask==1));
-        out = count_blacks/numel(rgbimage);
+        out = count_blacks/numel(RGB_mask);
     end
 end
