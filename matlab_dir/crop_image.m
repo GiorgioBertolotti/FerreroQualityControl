@@ -3,18 +3,42 @@ function out=crop_image(image)
     sides = find_sides(im);
     result = find_valid_corners(im, sides);
     if result.valid == true
-        cropped = crop_with_corners(im, result.corners);
+        % corners found with Hough
+        cropped = crop_with_corners(image, result.corners);
     else
         sides = find_sides_alt(im);
         result = find_valid_corners(im, sides);
         if result.valid == true
-            cropped = crop_with_corners(im, result.corners);
+            % corners found with Hough v2
+            cropped = crop_with_corners(image, result.corners);
         else
-            cropped = crop_with_mask(im);
-            im = equalize_image(im2double(cropped));
+            % corners not found with Hough, try to get a mask of the box
+            mask = get_mask(im);
+            corners = find_mask_corners(mask);
+            if valid_corners(corners)
+                % corners found with the mask
+                cropped_eq = crop_with_mask_corners(im, mask, corners);
+                cropped = crop_with_mask_corners(image, mask, corners);
+            else
+                % corners not found, crop with mask bounds and adjust angle
+                cropped_eq = crop_with_mask(im, mask);
+                cropped = crop_with_mask(image, mask);
+            end
+            % flip up/down the image if the white ferreros are on the bottom
+            [rows, ~, ~] = size(cropped_eq);
+            bw = rgb2gray(cropped_eq);
+            mask = bw > 0.5;
+            bottom_half_count = sum(sum(mask(floor(rows/2):rows, :)));
+            top_half_count = sum(sum(mask(1:floor(rows/2), :)));
+            if bottom_half_count > top_half_count
+                cropped_eq = flipud(cropped_eq);
+                cropped = flipud(cropped);
+            end
+            im = equalize_image(im2double(cropped_eq));
             sides = find_sides(im);
             result = find_valid_corners(im, sides);
             if result.valid == true
+                % corners found in the image cropped with mask
                 cropped = crop_with_corners(cropped, result.corners);
             end
         end
@@ -26,8 +50,9 @@ function out=crop_image(image)
     end
     % flip up/down the image if the white ferreros are on the bottom
     [rows, ~, ~] = size(cropped);
-    bw = rgb2gray(cropped);
-    mask = bw > 0.5;
+    ycbcr = rgb2ycbcr(cropped);
+    y = ycbcr(:,:,1);
+    mask = y > 128;
     bottom_half_count = sum(sum(mask(floor(rows/2):rows, :)));
     top_half_count = sum(sum(mask(1:floor(rows/2), :)));
     if bottom_half_count > top_half_count
