@@ -1,7 +1,6 @@
 I_nv = imread("cropped_dataset/061.jpg");
 I_v = imread("cropped_dataset/017.jpg");
 
-%{
 bw = rgb2gray(I_v);
 
 figure(1);
@@ -33,7 +32,6 @@ subplot(1,2,1);
 imshow(cr);
 subplot(1,2,2);
 imhist(cr);
-%}
 
 hsv = rgb2hsv(I_v);
 

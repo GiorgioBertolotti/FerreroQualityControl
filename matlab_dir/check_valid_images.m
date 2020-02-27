@@ -53,31 +53,40 @@ function out=check_valid_grid_image(image)
     sections = mat2cell(resized, cell_r * ones(4,1), cell_c * ones(6,1), [3]);
     image_copy = image;
     valid = 1;
-    median_whites = [];
-    median_blacks = [];
+    min_score = 0.85;
+    bonus_tollerance = 0.05;
+    median_values = [];
+    median_saturations = [];
+    computed_values = [];
+    computed_saturations = [];
     for i=1:4
-        computed_whites = [];
-        computed_blacks = [];
+        line_values = [];
+        line_saturations = [];
         for j=1:6
             section = cell2mat(sections(i,j));
-            computed_whites = [computed_whites, compute_whites(section)];
-            computed_blacks = [computed_blacks, compute_blacks(section)];
+            line_values = [line_values, compute_value(section)];
+            line_saturations = [line_saturations, compute_saturation(section)];
         end
-        median_whites = [median_whites, median(computed_whites)];
-        median_blacks = [median_blacks, median(computed_blacks)];
+        median_values = [median_values, median(line_values)];
+        median_saturations = [median_saturations, median(line_saturations)];
+        computed_values = [computed_values; line_values];
+        computed_saturations = [computed_saturations; line_saturations];
     end
     for i=1:4
         for j=1:6
-            section = cell2mat(sections(i,j));
-            computed_white = compute_whites(section);
-            computed_black = compute_blacks(section);
-            % we calculate a score based on how different is the quantity
-            % of whites and the quantity of blacks in the section compared
-            % to the median of the line of the section
-            % NB: this could create problems when there's a line which is
-            % very full of errors...
-            score = 1 - abs(median_whites(i) - computed_white) - abs(median_blacks(i) - computed_black);
-            if score < 0.7
+            computed_value = computed_values(i,j);
+            computed_saturation = computed_saturations(i,j);
+            % we calculate a score based on how different is the v
+            % s in the section compared to the median of the line of the 
+            % section
+            % NB: this could create problems when there's a line has many
+            % errors
+            score = 1 - abs(median_values(i) - computed_value) - abs(median_saturations(i) - computed_saturation);
+            tollerance = 0;
+            if or(j == 1, j == 6)
+                tollerance = bonus_tollerance;
+            end
+            if score < (min_score - min_score * tollerance)
                 valid = 0;
                 section_center = [floor(mean([cell_r * (i-1), cell_r * i])),floor(mean([cell_c * (j-1), cell_c * j]))];
                 circle_props = [section_center(2), section_center(1), floor(min(cell_r,cell_c)/2)];
@@ -143,6 +152,26 @@ function out=compute_line_blacks(sections, lineindex, skipindex)
         end
     end
     out = mean(black);
+end
+
+function out=compute_value(rgbimage)
+    if size(rgbimage,3) ~= 3
+        error("Input image should be RGB");
+    else
+        hsv = rgb2hsv(rgbimage);
+        v = hsv(:,:,3);
+        out = mean(mean(v));
+    end
+end
+
+function out=compute_saturation(rgbimage)
+    if size(rgbimage,3) ~= 3
+        error("Input image should be RGB");
+    else
+        hsv = rgb2hsv(rgbimage);
+        s = hsv(:,:,2);
+        out = mean(mean(s));
+    end
 end
 
 function out=compute_whites(rgbimage)
