@@ -7,7 +7,6 @@ function check_valid_images(images, type)
         error('Please call crop_dataset() first.');
     else
         nimages = numel(images);
-        desc_cd = [];
         v_folder_name = 'valid_images';
         if ~exist(v_folder_name, 'dir')
             mkdir(v_folder_name);
@@ -50,27 +49,27 @@ function out=check_valid_grid_image(image)
     cell_r = floor(r/4);
     cell_c = floor(c/6);
     resized = imresize(image, [4*cell_r, 6*cell_c]);
-    sections = mat2cell(resized, cell_r * ones(4,1), cell_c * ones(6,1), [3]);
+    sections = mat2cell(resized, cell_r * ones(4,1), cell_c * ones(6,1), (3));
     image_copy = image;
     valid = 1;
     min_score = 0.85;
     bonus_tollerance = 0.05;
-    median_values = [];
-    median_saturations = [];
-    computed_values = [];
-    computed_saturations = [];
+    median_values = zeros(4, 1);
+    median_saturations = zeros(4, 1);
+    computed_values = zeros(4, 6);
+    computed_saturations = zeros(4, 6);
     for i=1:4
-        line_values = [];
-        line_saturations = [];
+        line_values = zeros(6, 1);
+        line_saturations = zeros(6, 1);
         for j=1:6
             section = cell2mat(sections(i,j));
-            line_values = [line_values, compute_value(section)];
-            line_saturations = [line_saturations, compute_saturation(section)];
+            line_values(j) = compute_value(section);
+            line_saturations(j) = compute_saturation(section);
         end
-        median_values = [median_values, median(line_values)];
-        median_saturations = [median_saturations, median(line_saturations)];
-        computed_values = [computed_values; line_values];
-        computed_saturations = [computed_saturations; line_saturations];
+        median_values(i) = median(line_values);
+        median_saturations(i) = median(line_saturations);
+        computed_values(i, :) = line_values;
+        computed_saturations(i, :) = line_saturations;
     end
     for i=1:4
         for j=1:6
@@ -131,27 +130,27 @@ funge. magari a te viene in mente qualcosa (beehive type)
 %}
 
 function out=compute_line_whites(sections, lineindex, skipindex)
-    whites = [];
+    whites = zeros(6, 1);
     for i=1:6
         if i ~= skipindex
             section = cell2mat(sections(lineindex,i));
             computed_white = compute_whites(section);
-            whites = [whites; computed_white];
+            whites(i) = computed_white;
         end
     end
     out = mean(whites);
 end
 
 function out=compute_line_blacks(sections, lineindex, skipindex)
-    black = [];
+    blacks = zeros(6, 1);
     for i=1:6
         if i ~= skipindex
             section = cell2mat(sections(lineindex,i));
             computed_black = compute_blacks(section);
-            black = [black; computed_black];
+            blacks(i) = computed_black;
         end
     end
-    out = mean(black);
+    out = mean(blacks);
 end
 
 function out=compute_value(rgbimage)
