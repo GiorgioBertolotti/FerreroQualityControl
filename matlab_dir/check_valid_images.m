@@ -96,38 +96,61 @@ function out=check_valid_grid_image(image)
     out.image = image_copy;
     out.valid = valid;
 end
-%{
+
 function out=check_valid_beehive_image(image)
-    image = imrotate(image, 45);
-    [r,c,~] = size(image);
-    cell_r = floor(r/6);
-    cell_c = floor(c/6);
-    resized = imresize(image, [6*cell_r, 6*cell_c]);
-    sections = mat2cell(resized, cell_r * ones(6,1), cell_c * ones(6,1), [3]);
-    image_copy = image;
-    for i=1:6
-        for j=1:6
-            section = cell2mat(sections(i,j));
-            computed_white = compute_whites(section);
-            avg_whites_without_this = compute_line_whites(sections, i, j);
-            computed_black = compute_blacks(section);
-            avg_blacks_without_this = compute_line_blacks(sections, i, j);
-            score = 1 - abs(avg_whites_without_this - computed_white) - abs(avg_blacks_without_this - computed_black);
-            if score < 0.9
-                valid = 0;
-                section_center = [floor(mean([cell_r * (i-1), cell_r * i])),floor(mean([cell_c * (j-1), cell_c * j]))];
-                circle_props = [section_center(1), section_center(2), floor(min(cell_r,cell_c)/2)];
-                image_copy = insertShape(image_copy,'circle',circle_props,'LineWidth',5,'Color','red');
+    hsv = rgb2hsv(image);
+    s = hsv(:,:,2);
+    ms = s < 0.35;
+    fms = medfilt2(ms);
+    ffms = imfill(fms, 'holes');
+    %{
+    ycbcr = rgb2ycbcr(image);
+    cb = ycbcr(:,:,2);
+    mcb = cb > 105;
+    fmcb = medfilt2(mcb);
+
+    b = image(:,:,3);
+    mb = b > 120;
+    fmb = medfilt2(mb);
+    %}
+    mask = ffms;
+    cc = bwconncomp(mask);
+    stats = regionprops(cc, 'Area', 'Perimeter');
+    for i = 1: cc.NumObjects
+       circ = (4*pi*stats(i).Area)/((stats(i).Perimeter)^2);
+       if or(circ < 0.2, circ > 1.1)
+           mask(cc.PixelIdxList{i}) = 0;
+           stats(i).Area = 0;
+       end
+       stats(i).PixelIdxList = cc.PixelIdxList{i};
+       stats(i).Circularity = circ;
+    end
+
+    T = struct2table(stats);
+    sortedT = sortrows(T, 'Area', {'descend'});
+    stats = table2struct(sortedT);
+
+    for i = 25:size(stats)
+        for pixelIdx = stats(i).PixelIdxList
+            mask(pixelIdx) = 0;
+        end
+    end
+
+    image_area = (size(image, 1) * size(image, 2));
+    valid = 1;
+    for i = 1:24
+        area_perc = stats(i).Area / image_area;
+        if area_perc < 0.001
+            valid = 0;
+            for pixelIdx = stats(i).PixelIdxList
+                mask(pixelIdx) = 0;
             end
         end
     end
-    out.image = image_copy;
-    out.valid = valid;
-end
 
-stavo provando a fare la robba che ruoti di 45 e poi tracci le linee ma non
-funge. magari a te viene in mente qualcosa (beehive type)
-%}
+    out.valid = valid;
+    out.tag_mask = mask;
+end
 
 function out=compute_line_whites(sections, lineindex, skipindex)
     whites = zeros(6, 1);

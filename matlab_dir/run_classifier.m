@@ -2,7 +2,7 @@
 crop_dataset(images);
 separation = separate_lists(images, labels);
 check_valid_images(separation.grids, 'grid');
-%check_valid_images(separation.beehives, 'beehive');
+check_valid_images(separation.beehives, 'beehive');
 
 function [images,labels]=readlists()
   f=fopen('images.list');

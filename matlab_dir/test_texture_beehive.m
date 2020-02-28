@@ -1,5 +1,5 @@
 I_nv = imread("cropped_dataset/061.jpg");
-I_v = imread("cropped_dataset/031.jpg");
+I_v = imread("cropped_dataset/059.jpg");
 
 hsv = rgb2hsv(I_v);
 s = hsv(:,:,2);
@@ -39,7 +39,17 @@ for i = 25:size(stats)
     end
 end
 
-imshow(mask);
+image_area = (size(I_v, 1) * size(I_v, 2));
+valid = 1;
+for i = 1:24
+    area_perc = stats(i).Area / image_area;
+    if area_perc < 0.001
+        valid = 0;
+        for pixelIdx = stats(i).PixelIdxList
+            mask(pixelIdx) = 0;
+        end
+    end
+end
 
 %{
 r = I_v(:,:,1);
