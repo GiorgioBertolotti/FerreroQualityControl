@@ -1,33 +1,87 @@
 I_nv = imread("cropped_dataset/061.jpg");
-I_v = imread("cropped_dataset/017.jpg");
+I_v = imread("cropped_dataset/031.jpg");
 
-bw = rgb2gray(I_v);
-
-figure(1);
-subplot(1,2,1);
-imshow(bw);
-subplot(1,2,2);
-imhist(bw);
+hsv = rgb2hsv(I_v);
+s = hsv(:,:,2);
+ms = s < 0.35;
+fms = medfilt2(ms);
+ffms = imfill(fms, 'holes');
 
 ycbcr = rgb2ycbcr(I_v);
+cb = ycbcr(:,:,2);
+mcb = cb > 105;
+fmcb = medfilt2(mcb);
 
-y = ycbcr(:,:,1);
+b = I_v(:,:,3);
+mb = b > 120;
+fmb = medfilt2(mb);
+
+mask = ffms;
+cc = bwconncomp(mask);
+stats = regionprops(cc, 'Area', 'Perimeter');
+for i = 1: cc.NumObjects
+   circ = (4*pi*stats(i).Area)/((stats(i).Perimeter)^2);
+   if or(circ < 0.2, circ > 1.1)
+       mask(cc.PixelIdxList{i}) = 0;
+       stats(i).Area = 0;
+   end
+   stats(i).PixelIdxList = cc.PixelIdxList{i};
+   stats(i).Circularity = circ;
+end
+
+T = struct2table(stats);
+sortedT = sortrows(T, 'Area', {'descend'});
+stats = table2struct(sortedT);
+
+for i = 25:size(stats)
+    for pixelIdx = stats(i).PixelIdxList
+        mask(pixelIdx) = 0;
+    end
+end
+
+imshow(mask);
+
+%{
+r = I_v(:,:,1);
+figure(1);
+subplot(1,2,1);
+imshow(r);
+subplot(1,2,2);
+imhist(r);
+
+g = I_v(:,:,2);
 figure(2);
+subplot(1,2,1);
+imshow(g);
+subplot(1,2,2);
+imhist(g);
+
+b = I_v(:,:,3);
+figure(3);
+subplot(1,2,1);
+imshow(b);
+subplot(1,2,2);
+imhist(b);
+
+ycbcr = rgb2ycbcr(I_v);
+%{
+y = ycbcr(:,:,1);
+figure(4);
 subplot(1,2,1);
 imshow(y);
 subplot(1,2,2);
 imhist(y);
+%}
 
-%interessante
 cb = ycbcr(:,:,2);
-figure(3);
+figure(5);
 subplot(1,2,1);
 imshow(cb);
 subplot(1,2,2);
 imhist(cb);
 
 cr = ycbcr(:,:,3);
-figure(4);
+figure(6);
 subplot(1,2,1);
 imshow(cr);
 subplot(1,2,2);
@@ -35,47 +89,28 @@ imhist(cr);
 
 hsv = rgb2hsv(I_v);
 
-h = hsv(:,:,1);
-figure(5);
+h = hsv(:,:,3);
+figure(7);
 subplot(1,2,1);
 imshow(h);
 subplot(1,2,2);
 imhist(h);
 
 s = hsv(:,:,2);
-figure(6);
+figure(8);
 subplot(1,2,1);
 imshow(s);
 subplot(1,2,2);
 imhist(s);
-
+%{
 v = hsv(:,:,3);
-figure(7);
+figure(9);
 subplot(1,2,1);
 imshow(v);
 subplot(1,2,2);
 imhist(v);
-
-mh = and(h>0.5,h<0.55);
-bh = imbinarize(h); %non per forza così
-figure(8);
-subplot(1,2,1);
-imshow(mh);
-subplot(1,2,2);
-imshow(bh);
-
-ms = and(s~=0,s<0.1);
-figure(9);
-imshow(ms);
-
-fms = medfilt2(ms);
-ffms = imfill(fms, 'holes');
-figure(10);
-subplot(1,2,1);
-imshow(fms);
-subplot(1,2,2);
-imshow(ffms);
-
+%}
+%}
 %{
 I_nv = rgb2gray(I_nv);
 E_nv = entropyfilt(I_nv);

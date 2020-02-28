@@ -3,15 +3,15 @@ crop_dataset(images);
 separation = separate_lists(images, labels);
 check_valid_images(separation.grids, 'grid');
 %check_valid_images(separation.beehives, 'beehive');
-%{
-create_descriptor_files(separation.grids, separation.grid_labels, 'grid');
-load('descriptors.mat');
-load('input.mat');
-cv = cvpartition(labels, 'holdout', 0.3);
-grids_result = test_classifier(desc_cd, labels, cv);
-create_descriptor_files(separation.beehives, separation.beehive_labels, 'beehive');
-load('descriptors.mat');
-load('input.mat');
-cv = cvpartition(labels, 'holdout', 0.3);
-beehives_result = test_classifier(desc_cd, labels, cv);
-%}
+
+function [images,labels]=readlists()
+  f=fopen('images.list');
+  z = textscan(f,'%s');
+  fclose(f);
+  images = z{:}; 
+
+  f=fopen('labels2.list');
+  l = textscan(f,'%s');
+  fclose(f);
+  labels = l{:};
+end
