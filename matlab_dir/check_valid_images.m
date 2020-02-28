@@ -140,7 +140,7 @@ function out=check_valid_beehive_image(image)
     valid = 1;
     for i = 1:24
         area_perc = stats(i).Area / image_area;
-        if area_perc < 0.001
+        if area_perc < 0.0008
             valid = 0;
             for pixelIdx = stats(i).PixelIdxList
                 mask(pixelIdx) = 0;

@@ -1,5 +1,5 @@
 I_nv = imread("cropped_dataset/061.jpg");
-I_v = imread("cropped_dataset/059.jpg");
+I_v = imread("cropped_dataset/056.jpg");
 
 hsv = rgb2hsv(I_v);
 s = hsv(:,:,2);
@@ -43,12 +43,50 @@ image_area = (size(I_v, 1) * size(I_v, 2));
 valid = 1;
 for i = 1:24
     area_perc = stats(i).Area / image_area;
-    if area_perc < 0.001
+    if area_perc < 0.0008
         valid = 0;
         for pixelIdx = stats(i).PixelIdxList
             mask(pixelIdx) = 0;
         end
     end
+end
+
+labeled = bwlabel(mask);
+left_most_point = find_left_most_point(mask);
+right_most_point = find_right_most_point(mask);
+
+figure; imshow(mask);
+
+function out=find_left_most_point(mask)
+    pt = [];
+    for i = 1:size(mask, 2)
+        for j = 1:size(mask, 1)
+            if mask(j,i) == 1
+                pt = [j,i];
+                break;
+            end
+        end
+        if ~isempty(pt)
+            break;
+        end
+    end
+    out = pt;
+end
+
+function out=find_right_most_point(mask)
+    pt = [];
+    for i = size(mask, 2):-1:1
+        for j = 1:size(mask, 1)
+            if mask(j,i) == 1
+                pt = [j,i];
+                break;
+            end
+        end
+        if ~isempty(pt)
+            break;
+        end
+    end
+    out = pt;
 end
 
 %{
