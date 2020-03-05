@@ -1,13 +1,19 @@
 I_nv = imread("cropped_dataset/061.jpg");
 I_v = imread("cropped_dataset/057.jpg");
 
+se = strel('diamond', 4);
+
 hsv = rgb2hsv(I_v);
 s = hsv(:,:,2);
-ms = s < 0.35;
+ms = s < 0.3;
 fms = medfilt2(ms);
 ffms = imfill(fms, 'holes');
+cffms = imclose(ffms, se);
 
 ycbcr = rgb2ycbcr(I_v);
+y = ycbcr(:,:,1);
+my = y < 105;
+fmy = medfilt2(my);
 cb = ycbcr(:,:,2);
 mcb = cb > 105;
 fmcb = medfilt2(mcb);
@@ -16,7 +22,13 @@ b = I_v(:,:,3);
 mb = b > 120;
 fmb = medfilt2(mb);
 
-mask = ffms;
+r = I_v(:,:,1);
+mr = r < 50;
+fmr = medfilt2(mr);
+ffmr = imfill(fmr, 'holes');
+cffmr = imdilate(ffmr, se);
+
+mask = and(ffms==1,cffmr==0);
 cc = bwconncomp(mask);
 stats = regionprops(cc, 'Area', 'Perimeter');
 for i = 1: cc.NumObjects
@@ -58,10 +70,6 @@ right_most_point = find_right_most_point(mask);
 top_most_point = find_top_most_point(mask);
 bottom_most_point = find_bottom_most_point(mask);
 
-r = I_v(:,:,1);
-mr = r < 40;
-fmr = medfilt2(mr);
-ffmr = imfill(fmr, 'holes');
 left_most_point2 = find_left_most_point(ffmr);
 right_most_point2 = find_right_most_point(ffmr);
 top_most_point2 = find_top_most_point(ffmr);

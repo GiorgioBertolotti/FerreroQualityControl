@@ -1,17 +1,12 @@
-[images, labels] = readlists();
+images = readlists();
 crop_dataset(images);
-separation = separate_lists(images, labels);
+separation = separate_types(images);
 check_valid_images(separation.grids, 'grid');
 check_valid_images(separation.beehives, 'beehive');
 
-function [images,labels]=readlists()
+function images=readlists()
   f=fopen('images.list');
   z = textscan(f,'%s');
   fclose(f);
-  images = z{:}; 
-
-  f=fopen('labels2.list');
-  l = textscan(f,'%s');
-  fclose(f);
-  labels = l{:};
+  images = z{:};
 end

@@ -2,8 +2,7 @@ function out=crop_with_mask(im, mask)
     % crop out the rest of the image
     cropped = crop_rest_mask(im, mask);
     cropped_mask = crop_rest_mask(mask, mask);
-    % if necessary rotate the image to get the long side of the box
-    % horizontally aligned
+    % rotate the image in landscape
     [rows, columns, ~] = size(cropped);
     if rows > columns
         cropped = imrotate(cropped, 90);
@@ -46,8 +45,8 @@ function out=crop_with_mask(im, mask)
     side_elements = y > rows/20*19 & x > bottom_pt;
     bottom_side_x = x(side_elements);
     bottom_side_y = y(side_elements);
+    % uncomment to plot the lines
     %{
-    % show the sides
     imshow(cropped_mask, []);
     axis on;
     hold on;

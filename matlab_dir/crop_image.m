@@ -1,18 +1,22 @@
 function out=crop_image(image)
     im = equalize_image(im2double(image));
+    % search the box sides with Hough transform
     sides = find_sides(im);
     result = find_valid_corners(im, sides);
     if result.valid == true
         % corners found with Hough
         cropped = crop_with_corners(image, result.corners);
     else
+        % search the box sides with another configuration of Hough 
+        % transform
         sides = find_sides_alt(im);
         result = find_valid_corners(im, sides);
         if result.valid == true
             % corners found with Hough v2
             cropped = crop_with_corners(image, result.corners);
         else
-            % corners not found with Hough, try to get a mask of the box
+            % corners not found with Hough v2, try to get the corners from 
+            % a mask of the box
             mask = get_mask(im);
             corners = find_mask_corners(mask);
             if valid_corners(corners)
@@ -24,7 +28,7 @@ function out=crop_image(image)
                 cropped_eq = crop_with_mask(im, mask);
                 cropped = crop_with_mask(image, mask);
             end
-            % flip up/down the image if the white ferreros are on the bottom
+            % flip the image to have white ferreros at the top
             [rows, ~, ~] = size(cropped_eq);
             bw = rgb2gray(cropped_eq);
             mask = bw > 0.5;
@@ -34,6 +38,7 @@ function out=crop_image(image)
                 cropped_eq = flipud(cropped_eq);
                 cropped = flipud(cropped);
             end
+            % search again the sides with Hough transform
             im = equalize_image(im2double(cropped_eq));
             sides = find_sides(im);
             result = find_valid_corners(im, sides);
@@ -48,7 +53,7 @@ function out=crop_image(image)
     if rows > columns
         cropped = imrotate(cropped, 90);
     end
-    % flip up/down the image if the white ferreros are on the bottom
+    % flip the image to have white ferreros at the top
     [rows, ~, ~] = size(cropped);
     ycbcr = rgb2ycbcr(cropped);
     y = ycbcr(:,:,1);

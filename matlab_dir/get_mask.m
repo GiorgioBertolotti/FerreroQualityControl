@@ -1,4 +1,4 @@
-function out=find_mask(im)
+function out=get_mask(im)
     % use a threshold on CR channel to get a mask of the box
     ycbcr = rgb2ycbcr(im);
     CR = ycbcr(:,:,3);

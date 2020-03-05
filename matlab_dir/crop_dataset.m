@@ -1,5 +1,6 @@
 function crop_dataset(images)
     folder_name = 'cropped_dataset';
+    % if the folder exists don't crop again
     if ~exist(folder_name, 'dir')
         mkdir(folder_name);
         original_folder_name = 'dataset';
