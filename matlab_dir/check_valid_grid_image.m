@@ -1,17 +1,22 @@
-function out=check_valid_grid_image_old(image)
+function out=check_valid_grid_image(image)
     [r,c,~] = size(image);
     cell_r = floor(r/4);
     cell_c = floor(c/6);
+    
     resized = imresize(image, [4*cell_r, 6*cell_c]);
     sections = mat2cell(resized, cell_r * ones(4,1), cell_c * ones(6,1), (3));
+    
     image_copy = image;
+    
     valid = 1;
     min_score = 0.85;
     bonus_tollerance = 0.05;
     median_values = zeros(4, 1);
     median_saturations = zeros(4, 1);
+    
     computed_values = zeros(4, 6);
     computed_saturations = zeros(4, 6);
+    
     for i=1:4
         line_values = zeros(6, 1);
         line_saturations = zeros(6, 1);
@@ -25,6 +30,7 @@ function out=check_valid_grid_image_old(image)
         computed_values(i, :) = line_values;
         computed_saturations(i, :) = line_saturations;
     end
+    
     for i=1:4
         for j=1:6
             computed_value = computed_values(i,j);

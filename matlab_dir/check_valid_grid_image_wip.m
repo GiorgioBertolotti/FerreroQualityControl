@@ -1,4 +1,4 @@
-function out=check_valid_grid_image(image)
+function out=check_valid_grid_image_wip(image)
     equalized_image = equalize_image(image);
     
     [r,c,~] = size(image);
