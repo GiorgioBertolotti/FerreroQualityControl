@@ -18,8 +18,6 @@ function out=crop_image(image)
             % corners not found with Hough v2, try to get the corners from 
             % a mask of the box
             mask = get_mask(im);
-    figure, imshowpair(im, mask, 'montage');
-    return;
             corners = find_mask_corners(mask);
             if valid_corners(corners)
                 % corners found with the mask
