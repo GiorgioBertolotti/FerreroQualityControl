@@ -1,34 +1,32 @@
-function out=find_sides(equalized_image)
-    % use a threshold to get a mask with the box sides
-    ycbcr = rgb2ycbcr(equalized_image);
-    CR = ycbcr(:,:,3);
-    T = 110/255;
-    mask1 = CR < T;
-    mask1 = medfilt2(mask1);
+function out=find_sides(image)
+    % use otsu to get a mask with the box sides
+    mask = get_mask_otsu(image);
     % process mask edges and detect lines with hough
-    BW = edge(mask1,'canny');
+    BW = edge(mask,'canny');
     [H,T,R] = hough(BW);
-    P = houghpeaks(H,6,'threshold',ceil(0.3*max(H(:))));
-    lines = houghlines(BW,T,R,P,'FillGap',15,'MinLength',15);
-    %{
+    P = houghpeaks(H,10,'threshold',ceil(0.3*max(H(:))));
+    lines = houghlines(BW,T,R,P,'MinLength',45);
+    
     % uncomment to plot all lines
-    figure, imshow(equalized_image), hold on;
+    figure, imshow(image), hold on;
     for i = 1:length(lines)
        xy = [lines(i).point1; lines(i).point2];
        plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
        plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
        plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
     end
-    %}
+    
     % get angles for the lines
     new_lines = [];
     for i = 1:length(lines)
         line.rho = lines(i).rho;
         line.theta = lines(i).theta;
         line.angle = line.theta*pi/180;
+        line.length = floor(pdist([lines(i).point1; lines(i).point2]));
         found = 0;
         for j = 1:length(new_lines)
             if and(line.rho == new_lines(j).rho, line.theta == new_lines(j).theta)
+                new_lines(j).length = new_lines(j).length + line.length;
                 found = 1;
                 break;
             end
@@ -45,8 +43,8 @@ function out=find_sides(equalized_image)
         % the conditions, the similarity is defined by the delta of the 
         % angle of two lines, it increases at every try
         max_delta = 10;
-        min_sides_dist = floor(length(equalized_image) / 20);
-        new_lines = similar_theta_filtering(lines, max_delta, min_sides_dist);
+        min_sides_dist = floor(length(image) / 20);
+        new_lines = similar_theta_filtering(image, lines, max_delta, min_sides_dist);
         if size(new_lines,1) >= 4
             lines = new_lines;
         end
@@ -54,7 +52,7 @@ function out=find_sides(equalized_image)
         num_cycles_bigger_than_4 = 0;
         while size(lines,1) > 4
             max_delta = max_delta + 1;
-            new_lines = similar_theta_filtering(lines, max_delta, min_sides_dist);
+            new_lines = similar_theta_filtering(image, lines, max_delta, min_sides_dist);
             if size(new_lines,1) > 4
                 if size(new_lines,1) < size(lines,1)
                     lines = new_lines;
@@ -78,7 +76,7 @@ function out=find_sides(equalized_image)
     out = lines;
 end
 
-function out=similar_theta_filtering(lines, max_delta_theta, min_sides_dist)
+function out=similar_theta_filtering(image, lines, max_delta_theta, min_sides_dist)
     similar_thetas = {};
     % group the lines based on similar angles
     for i = 1:length(lines)
@@ -111,38 +109,69 @@ function out=similar_theta_filtering(lines, max_delta_theta, min_sides_dist)
         if length(similar_thetas{i}) > 2
             min_rho = similar_thetas{i}(1);
             max_rho = similar_thetas{i}(1);
+            min_len = similar_thetas{i}(1);
+            max_len = similar_thetas{i}(1);
+            min_theta = similar_thetas{i}(1);
+            max_theta = similar_thetas{i}(1);
+            
             for j = 2:length(similar_thetas{i})
                 line = similar_thetas{i}(j);
+                
                 if line.rho < min_rho.rho
                     min_rho = line;
                 end
+                
                 if line.rho > max_rho.rho
                     max_rho = line;
                 end
+                
+                if line.length < min_rho.length
+                    min_len = line;
+                end
+                
+                if line.length > max_rho.length
+                    max_len = line;
+                end
+                
+                if line.theta < min_rho.theta
+                    min_theta = line;
+                end
+                
+                if line.theta > max_rho.theta
+                    max_theta = line;
+                end
             end
+            
             line1 = min_rho;
             line2 = max_rho;
-            % but if there's another line close to the max or to the min with a
-            % more similar angle to the opposite line then pick that
+            
+            % but if there's another line close to the max or to the min
+            % which covers a longest distance we want that one
             for j = 1:length(similar_thetas{i})
                 line = similar_thetas{i}(j);
+                
                 if and(or(line.rho ~= line1.rho, line.theta ~= line1.theta),...
                         or(line.rho ~= line2.rho, line.theta ~= line2.theta))
-                    delta_theta_max_min = abs(line1.theta - line2.theta);
                     if abs(line.rho - line1.rho) < min_sides_dist
-                        delta_theta_new_line = abs(line.theta - line2.theta);
-                        if delta_theta_new_line < delta_theta_max_min
+                        score_line1 = (line1.length - min_len.length)/(max_len.length - min_len.length) + (abs(line1.theta - line2.theta))/(max_theta.theta - min_theta.theta);
+                        score_line = (line.length - min_len.length)/(max_len.length - min_len.length) + (abs(line.theta - line2.theta))/(max_theta.theta - min_theta.theta);
+                        
+                        if score_line > score_line1
                             line1 = line;
                         end
                     end
+                    
                     if abs(line.rho - line2.rho) < min_sides_dist
-                        delta_theta_new_line = abs(line.theta - line1.theta);
-                        if delta_theta_new_line < delta_theta_max_min
+                        score_line2 = (line2.length - min_len.length)/(max_len.length - min_len.length) + (abs(line2.theta - line1.theta))/(max_theta.theta - min_theta.theta);
+                        score_line = (line.length - min_len.length)/(max_len.length - min_len.length) + (abs(line.theta - line1.theta))/(max_theta.theta - min_theta.theta);
+                        
+                        if score_line > score_line2
                             line2 = line;
                         end
                     end
                 end
             end
+            
             similar_thetas{i} = [line1, line2];
         end
     end

@@ -1,53 +1,41 @@
 function out=crop_image(image)
-    im = equalize_image(im2double(image));
+    % im = equalize_image(im2double(image));
     % search the box sides with Hough transform
-    sides = find_sides(im);
-    result = find_valid_corners(im, sides);
+    sides = find_sides(image);
+    result = find_valid_corners(image, sides);
     if result.valid == true
         % corners found with Hough
         cropped = crop_with_corners(image, result.corners);
     else
-        % search the box sides with another configuration of Hough 
-        % transform
-        sides = find_sides_alt(im);
-        result = find_valid_corners(im, sides);
-        if result.valid == true
-            % corners found with Hough v2
-            cropped = crop_with_corners(image, result.corners);
+        % corners not found with Hough, try to get the corners from 
+        % a mask of the box
+        mask = get_mask(image);
+        corners = find_mask_corners(mask);
+        if valid_corners(corners)
+            % corners found with the mask
+            cropped = crop_with_corners(image, corners);
         else
-            % corners not found with Hough v2, try to get the corners from 
-            % a mask of the box
-            mask = get_mask(im);
-    figure, imshowpair(im, mask, 'montage');
-    return;
-            corners = find_mask_corners(mask);
-            if valid_corners(corners)
-                % corners found with the mask
-                cropped_eq = crop_with_corners(im, corners);
-                cropped = crop_with_corners(image, corners);
-            else
-                % corners not found, crop with mask bounds and adjust angle
-                cropped_eq = crop_with_mask(im, mask);
-                cropped = crop_with_mask(image, mask);
-            end
-            % flip the image to have white ferreros at the top
-            [rows, ~, ~] = size(cropped_eq);
-            bw = rgb2gray(cropped_eq);
-            mask = bw > 0.5;
-            bottom_half_count = sum(sum(mask(floor(rows/2):rows, :)));
-            top_half_count = sum(sum(mask(1:floor(rows/2), :)));
-            if bottom_half_count > top_half_count
-                cropped_eq = flipud(cropped_eq);
-                cropped = flipud(cropped);
-            end
-            % search again the sides with Hough transform
-            im = equalize_image(im2double(cropped_eq));
-            sides = find_sides(im);
-            result = find_valid_corners(im, sides);
-            if result.valid == true
-                % corners found in the image cropped with mask
-                cropped = crop_with_corners(cropped, result.corners);
-            end
+            % corners not found, crop with mask bounds and adjust angle
+            cropped = crop_with_mask(image, mask);
+        end
+        % flip the image to have white ferreros at the top
+        %{
+        cropped_eq = equalize_image(im2double(cropped));
+        [rows, ~, ~] = size(cropped_eq);
+        bw = rgb2gray(cropped_eq);
+        mask = bw > 0.5;
+        bottom_half_count = sum(sum(mask(floor(rows/2):rows, :)));
+        top_half_count = sum(sum(mask(1:floor(rows/2), :)));
+        if bottom_half_count > top_half_count
+            cropped = flipud(cropped);
+        end
+        %}
+        % search again the sides with Hough transform
+        sides = find_sides(cropped);
+        result = find_valid_corners(cropped, sides);
+        if result.valid == true
+            % corners found in the image cropped with mask
+            cropped = crop_with_corners(cropped, result.corners);
         end
     end
     % rotate the image in landscape

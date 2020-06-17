@@ -1,4 +1,17 @@
 function out=get_mask(im)
+    mask = get_mask_otsu(im);
+    mask = imcomplement(mask);
+    % remove salt&pepper on mask
+    mask = medfilt2(mask);
+    % close mask
+    se = strel("diamond", floor(min(size(mask)) / 100));
+    mask = imclose(mask, se);
+    % fill mask holes
+    mask = imfill(mask, 'holes');
+    % get the largest pixel area
+    mask = bwareafilt(mask, 1);
+    out = mask;
+    %{
     % use a threshold on CR channel to get a mask of the box
     ycbcr = rgb2ycbcr(im);
     CR = ycbcr(:,:,3);
@@ -25,4 +38,5 @@ function out=get_mask(im)
     % get the largest pixel area
     mask = bwareafilt(mask, 1);
     out = mask;
+    %}
 end
