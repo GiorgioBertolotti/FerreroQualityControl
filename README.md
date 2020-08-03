@@ -1,5 +1,7 @@
 # FerreroQualityControl
 
+The file with the presentation of the project is [*Presentazione.pdf*](Presentazione.pdf).
+
 ## Getting started
 
 To start the program just run the function

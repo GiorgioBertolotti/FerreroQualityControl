@@ -10,8 +10,8 @@ function out=run_classifier()
     
     crop_dataset(images);
     separation = separate_types(images);
-    result_grids = check_valid_images(separation.grids, 'grid');
     result_beehives = check_valid_images(separation.beehives, 'beehive');
+    result_grids = check_valid_images(separation.grids, 'grid');
     
     correct_counter = 0;
     
