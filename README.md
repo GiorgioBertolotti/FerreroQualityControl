@@ -1,6 +1,6 @@
 # FerreroQualityControl
 
-The file with the presentation of the project is [*Presentazione.pdf*](Presentazione.pdf).
+> The file with the presentation of the project is [*Presentation.pdf*](Presentation.pdf).
 
 ## Getting started
 
@@ -21,11 +21,11 @@ The file with the requirements of the project is [*Assignment.pdf*](Assignment.p
 
 ## Task list
 
-- [x] Rename dataset files to follow a standard (es. 01.jpg, 02.jpg, 03.jpg, ecc.)
-- [x] Create groundtruth file
-- [x] Add script for parsing of dataset and labels
-- [x] Clean light illumination difference between images (equalization)
-- [x] Extract box from the image
-- [x] Rotate and stretch the box to fill the image
-- [x] Implement the recognition of the valid/not valid boxes
-- [x] Compare the results with the groundtruth
+- [x] <del>Rename dataset files to follow a standard (es. 01.jpg, 02.jpg, 03.jpg, ecc.)</del>
+- [x] <del>Create groundtruth file</del>
+- [x] <del>Add script for parsing of dataset and labels</del>
+- [x] <del>Clean light illumination difference between images (equalization)</del>
+- [x] <del>Extract box from the image</del>
+- [x] <del>Rotate and stretch the box to fill the image</del>
+- [x] <del>Implement the recognition of the valid/not valid boxes</del>
+- [x] <del>Compare the results with the groundtruth</del>
