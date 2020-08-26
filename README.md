@@ -1,6 +1,7 @@
 # FerreroQualityControl
 
-> The file with the presentation of the project is [*Presentation.pdf*](Presentation.pdf).
+> **NOTE**: The presentation file is in Italian, since it was the submission of my Image Analysis exam.  
+> The presentation of the project is [*Presentation.pdf*](Presentation.pdf).
 
 ## Getting started
 
